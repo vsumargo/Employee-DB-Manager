@@ -8,7 +8,4 @@ const connection = mysql.createConnection({
     database: 'employee_db_manager',
 });
 
-
-
-
 module.exports = connection;

@@ -74,11 +74,55 @@ const viewOption = () => {
         choices: choicesArray
     };
 
-    inquirer.prompt(question).then((result) => {
-        console.log(result);
-        controller(result);
-    });
+    inquirer.prompt(question)
+    .then(controller);
 };
+
+const viewAllEmployee = () => {
+    const choicesArray = [
+        {name:'Sort Employees By ID', value:18},
+        {name:'Sort Employees By Manager', value:19},
+    ];
+
+    const question = {
+        type: 'list',
+        name: 'option',
+        message: 'Select how you want to VIEW employees:',
+        choices: choicesArray
+    };
+
+    inquirer.prompt(question)
+    .then(controller);
+}
+
+const viewAllDepartment = () => {
+    console.log('Here are the list of all Departments:');
+    //run mySQL query here
+    queries.viewAllDepartmentAsync()
+    .then(() => startApp())
+    .then(controller);
+}
+
+const viewAllRoles = () => {
+    console.log('Here are the list of all Roles:');
+    queries.viewAllRolesAsync()
+    .then(() => startApp())
+    .then(controller);
+}
+
+const sortEmployeeByID = () => {
+    console.log('Here are the list of all Employees sorted by ID:');
+    queries.sortEmployeeByIDAsync()
+    .then(() => startApp())
+    .then(controller);
+}
+
+const sortEmployeeByManager = () => {
+    console.log('Here are the list of all Employees sorted by Manager:');
+    queries.sortEmployeeByManagerAsync()
+    .then(() => startApp())
+    .then(controller);
+}
 
 const addOption = () => {
     const choicesArray = [
@@ -95,11 +139,77 @@ const addOption = () => {
         choices: choicesArray
     };
 
-    inquirer.prompt(question).then((result) => {
-        console.log(result);
-        controller(result);
-    });
+    inquirer.prompt(question)
+    .then(controller);
 };
+
+const addEmployee = () => {
+    const array = [];
+
+    queries.displayRoles()
+    .then((result) => {
+        array.push(result);
+        return queries.displayManagers()
+    })
+    .then((result2) => {
+        array.push(result2);
+        const question = [
+            {
+                type: 'input',
+                name: 'first_name',
+                message: 'Please enter FIRST NAME of Employee:',
+            },
+            {
+                type: 'input',
+                name: 'last_name',
+                message: 'Please enter LAST NAME of Employee:',
+            },
+            {
+                type: 'rawlist',
+                name: 'role_id',
+                message: 'Please choose ROLE from the following options:',
+                choices: array[0]
+            },
+            {
+                type: 'rawlist',
+                name: 'manager_id',
+                message: 'Select one Manager to be in charge of the employee:',
+                choices: array[1]
+            },
+        ];
+        return inquirer.prompt(question)
+    })
+    .then((data) => {
+        console.log(data);
+        return queries.addEmployee(data);
+    })
+    .then(() => startApp())
+    .then(controller)
+    .catch((err) => console.log(err))
+};
+
+const addDepartment = () => {
+    queries.viewAllDepartmentAsync()
+    .then(() => {
+        const question = [
+            {
+                type: 'input',
+                name: 'name',
+                message: 'Please enter NAME of Department to ADD:',
+            },
+            {
+                type: 'input',
+                name: 'id',
+                message: 'Please enter ID for the NEW Department (department id format: 8xx):',
+            },
+        ];
+        return inquirer.prompt(question)
+    })
+    .then((data) => queries.addDepartment(data))
+    .then(() => startApp())
+    .then(controller)
+    .catch((err) => console.log(err))
+}
 
 const updateOption = () => {
     const choicesArray = [
@@ -116,10 +226,8 @@ const updateOption = () => {
         choices: choicesArray
     };
 
-    inquirer.prompt(question).then((result) => {
-        console.log(result);
-        controller(result);
-    });
+    inquirer.prompt(question)
+    .then(controller);
 };
 
 const deleteOption = () => {
@@ -137,10 +245,8 @@ const deleteOption = () => {
         choices: choicesArray
     };
 
-    inquirer.prompt(question).then((result) => {
-        console.log(result);
-        controller(result);
-    });
+    inquirer.prompt(question)
+    .then(controller);
 };
 
 const exitApplication = () => {
@@ -148,40 +254,7 @@ const exitApplication = () => {
     connection.end();
 };
 
-const viewAllEmployee = () => {
-    const choicesArray = [
-        {name:'Sort Employees By ID', value:18},
-        {name:'Sort Employees By Manager', value:19},
-    ];
 
-    const question = {
-        type: 'list',
-        name: 'option',
-        message: 'Select how you want to VIEW employees:',
-        choices: choicesArray
-    };
-
-    inquirer.prompt(question).then((result) => {
-        console.log(result);
-        controller(result);
-    });
-}
-
-const viewAllDepartment = () => {
-    console.log('Here are the list of all Departments:');
-    //run mySQL query here
-    queries.viewAllDepartmentAsync()
-    .then(() => startApp())
-    .then(controller);
-}
-
-const viewAllRoles = () => {
-    console.log('Here are the list of all Roles:');
-    //run mySQL query here
-    queries.viewAllRolesAsync()
-    .then(() => startApp())
-    .then(controller);
-}
 
 module.exports = {
     startApp,
