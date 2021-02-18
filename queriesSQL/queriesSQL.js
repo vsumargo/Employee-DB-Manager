@@ -3,6 +3,36 @@ const cTable = require('console.table')
 
 let sqlquery;
 
+const getDataEmployee = (data) => {
+    return new Promise ((resolve,reject) => {
+        sqlquery = 'SELECT * FROM employee WHERE ?';
+        connection.query(sqlquery,data,(err,result) => {
+            if (err) {reject(err)}
+            else{resolve(result)}
+        });
+    })
+}
+
+const getDataDepartment = (data) => {
+    return new Promise ((resolve,reject) => {
+        sqlquery = 'SELECT * FROM department WHERE ?';
+        connection.query(sqlquery,data,(err,result) => {
+            if (err) {reject(err)}
+            else{resolve(result)}
+        });
+    })
+}
+
+const getDataRole = (data) => {
+    return new Promise ((resolve,reject) => {
+        sqlquery = 'SELECT * FROM roles WHERE ?';
+        connection.query(sqlquery,data,(err,result) => {
+            if (err) {reject(err)}
+            else{resolve(result)}
+        });
+    })
+}
+
 const displayRoles = () => {
     return new Promise ((resolve,reject) => {
         sqlquery = 'SELECT id,title FROM roles';
@@ -49,6 +79,24 @@ const displayManagers = () => {
             resolve(managerArray);
         });
     })
+}
+
+const displayEmployees = () => {
+    return new Promise ((resolve,reject) => {
+        sqlquery = `SELECT e1.id,CONCAT(e1.first_name,' ',e1.last_name,' - ',roles.title) AS 'name'
+        FROM employee e1
+        LEFT JOIN roles ON e1.role_id = roles.id
+        `;
+        connection.query(sqlquery,(err,result) => {
+            if (err) reject(err);
+            let employeesArray = [];
+            result.map((el) => {
+                let employees = {name: `${el.name}`, value: el.id};
+                employeesArray.push(employees)
+            });
+            resolve(employeesArray);
+        });
+    })  
 }
 
 const viewAllDepartmentAsync = () => {
@@ -146,16 +194,92 @@ const addDepartment = (data) => {
     })
 }
 
+const addRole = (data) => {
+    return new Promise ((resolve,reject) => {
+        sqlquery =  `
+        INSERT INTO roles
+        SET ?`;
+        connection.query(sqlquery,data,(err) => {
+            if (err) {reject(err)}
+            else{
+                console.log(`\nYou Have Successfully ADD New Roles with the following details:\n
+                id: ${data.id}
+                Title: ${data.title}
+                Salary: ${data.salary}
+                department_id: ${data.department_id}
+                \n
+                `)
+               resolve('success')
+            } 
+        })
+    })
+}
+
+const updateEmployee = (result) => {
+    return new Promise ((resolve,reject) => {
+        sqlquery =  `UPDATE employee SET ? WHERE ?`;
+        connection.query(sqlquery,[{...result},{id:result.id}],(err) => {
+            if (err) {reject(err)}
+            else{
+                console.log(`\nYou Have Successfully UPDATED details for ${result.first_name} ${result.last_name}\n`);
+                resolve('success')
+            } 
+        })
+    })
+}
+
+const updateDepartment = (result) => {
+    return new Promise ((resolve,reject) => {
+        sqlquery =  `UPDATE department SET ? WHERE ?`;
+        connection.query(sqlquery,
+            [
+                {id:result.id, name:result.name},
+                {id:result.oldID}
+            ],(err) => {
+            if (err) {reject(err)}
+            else{
+                console.log(`\nYou Have Successfully UPDATED Department details for ${result.id} - ${result.name}\n`);
+                resolve('success')
+            } 
+        })
+    })
+}
+
+const updateRole = (result) => {
+    return new Promise ((resolve,reject) => {
+        sqlquery =  `UPDATE roles SET ? WHERE ?`;
+        connection.query(sqlquery,
+            [
+                {id:result.id, title:result.title, salary: result.salary, department_id: result.department_id},
+                {id:result.oldID}
+            ],(err) => {
+            if (err) {reject(err)}
+            else{
+                console.log(`\nYou Have Successfully UPDATED Role details for ${result.id} - ${result.title}\n`);
+                resolve('success')
+            } 
+        })
+    })
+}
+
 module.exports = {
+    getDataEmployee,
+    getDataDepartment,
+    getDataRole,
     displayRoles,
     displayDepartments,
     displayManagers,
+    displayEmployees,
     viewAllDepartmentAsync,
     viewAllRolesAsync,
     sortEmployeeByIDAsync,
     sortEmployeeByManagerAsync,
     addEmployee,
-    addDepartment
+    addDepartment,
+    addRole,
+    updateEmployee,
+    updateDepartment,
+    updateRole
 };
 
 

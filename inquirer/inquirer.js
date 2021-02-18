@@ -45,13 +45,13 @@ const controller = (result) => {
             case 8: viewAllRoles(); break;
             case 9: addEmployee(); break;
             case 10: addDepartment(); break;
-            case 11: addRoles(); break;
+            case 11: addRole(); break;
             case 12: updateEmployee(); break;
             case 13: updateDepartment(); break;
-            case 14: updateRoles(); break;
+            case 14: updateRole(); break;
             case 15: deleteEmployee(); break;
             case 16: deleteDepartment(); break;
-            case 17: deleteRoles(); break;
+            case 17: deleteRole(); break;
             case 18: sortEmployeeByID(); break;
             case 19: sortEmployeeByManager(); break;
             default:break;
@@ -201,11 +201,46 @@ const addDepartment = () => {
                 type: 'input',
                 name: 'id',
                 message: 'Please enter ID for the NEW Department (department id format: 8xx):',
-            },
+            }
         ];
         return inquirer.prompt(question)
     })
     .then((data) => queries.addDepartment(data))
+    .then(() => startApp())
+    .then(controller)
+    .catch((err) => console.log(err))
+}
+
+const addRole = () => {
+    queries.viewAllRolesAsync()
+    .then(() => queries.displayDepartments())
+    .then((result) => {
+        const question = [
+            {
+                type: 'input',
+                name: 'id',
+                message: 'Please enter ID of the New Role to ADD:',
+            },
+            {
+                type: 'input',
+                name: 'title',
+                message: 'Please enter TITLE for the New Role:',
+            },
+            {
+                type: 'number',
+                name: 'salary',
+                message: 'Please enter SALARY for the New Role:',
+            },
+            {
+                type: 'rawlist',
+                name: 'department_id',
+                message: 'Please choose the DEPARTMENT for the New Role:',
+                choices: result
+            }
+        ];
+        return inquirer.prompt(question)
+    })
+    .then((data) => queries.addRole(data))
     .then(() => startApp())
     .then(controller)
     .catch((err) => console.log(err))
@@ -229,6 +264,170 @@ const updateOption = () => {
     inquirer.prompt(question)
     .then(controller);
 };
+
+const updateEmployee = () => {
+    queries.displayEmployees()
+    .then((data) => {
+        return inquirer.prompt({
+            type: 'list',
+            name: 'id',
+            message: 'Please choose employee to UPDATE:',
+            choices: data
+        });
+    })
+    .then((data2) => Promise.all([
+        queries.getDataEmployee(data2),
+        queries.displayRoles(),
+        queries.displayManagers()
+    ]))
+    .then((data3) => {
+        const {id,first_name,last_name,role_id,manager_id} = data3[0][0];
+        data3[2].push({name:'NULL', value:'null'});
+        const defaultRole = parseInt(data3[1].findIndex((el) => el.value === role_id));
+        const defaultManager = parseInt(data3[2].findIndex((el) => JSON.parse(el.value) == manager_id));
+        return inquirer.prompt([
+            {
+                type: 'confirm',
+                name: 'id',
+                message: `Do you want to UPDATE details for ${first_name} ${last_name}?`,
+                default:false
+            },
+            {
+                type: 'input',
+                name: 'first_name',
+                message: `Please update FIRST NAME (if no changes, press enter to skip) :`,
+                default: `${first_name}`
+            },
+            {
+                type: 'input',
+                name: 'last_name',
+                message: `Please update LAST NAME (if no changes, press enter to skip) :`,
+                default: `${last_name}`
+            },
+            {
+                type: 'rawlist',
+                name: 'role_id',
+                message: `Please update ROLE ${first_name} ${last_name} (if no changes, press enter to skip) :`,
+                choices: data3[1],
+                default: defaultRole
+            },
+            {
+                type: 'rawlist',
+                name: 'manager_id',
+                message: `Please update Manager for ${first_name} ${last_name} (if no changes, press enter to skip) :`,
+                choices: data3[2],
+                default: defaultManager
+            }
+        ])
+        .then((result) => {
+            if(result.id && result.manager_id === 'null') {
+                result.id = id;
+                result.manager_id = JSON.parse(result.manager_id);
+            }else {
+                result.id = id;
+            };
+            return result;
+        })
+    })
+    .then((result) => queries.updateEmployee(result))
+    .then(() => startApp())
+    .then(controller)     
+}
+
+const updateDepartment = () => {
+    queries.displayDepartments()
+    .then((data) => {
+        return inquirer.prompt([
+            {
+            type: 'list',
+            name: 'id',
+            message: 'Please choose Department to UPDATE:',
+            choices: data
+            }
+        ])
+    })
+    .then((data2) => queries.getDataDepartment(data2))
+    .then((data3) => {
+        const {id,name} = data3[0];
+        return inquirer.prompt([
+            {
+                type: 'input',
+                name: 'id',
+                message: `Please update ID of ${name} Department (if no changes, press enter to skip) :`,
+                default: `${id}`
+            },
+            {
+                type: 'input',
+                name: 'name',
+                message: `Please update NAME of ${name} Department (if no changes, press enter to skip) :`,
+                default: `${name}`
+            },
+        ])
+        .then((result) => {
+            result.oldID = id;
+            return result;
+        })
+    })
+    .then((result) => queries.updateDepartment(result))
+    .then(() => startApp())
+    .then(controller) 
+}
+
+const updateRole = () => {
+    queries.displayRoles()
+    .then((data) => {
+        return inquirer.prompt([
+            {
+            type: 'list',
+            name: 'id',
+            message: 'Please choose Role to UPDATE:',
+            choices: data
+            }
+        ])
+    })
+    .then((data2) => Promise.all([
+        queries.getDataRole(data2),
+        queries.displayDepartments()
+    ]))
+    .then((data3) => {
+        const {id,title,salary,department_id} = data3[0][0];
+        const defaultDepartment = parseInt(data3[1].findIndex((el) => el.value === department_id));
+        return inquirer.prompt([
+            {
+                type: 'input',
+                name: 'id',
+                message: `Please update ID of ${title} Role (if no changes, press enter to skip) :`,
+                default: `${id}`
+            },
+            {
+                type: 'input',
+                name: 'title',
+                message: `Please update TITLE of ${title} Role (if no changes, press enter to skip) :`,
+                default: `${title}`
+            },
+            {
+                type: 'number',
+                name: 'salary',
+                message: `Please update SALARY of ${title} Role (if no changes, press enter to skip) :`,
+                default: `${salary}`
+            },
+            {
+                type: 'rawlist',
+                name: 'department_id',
+                message: `Please update which Department the ${title} Role belongs (if no changes, press enter to skip) :`,
+                choices: data3[1],
+                default: defaultDepartment
+            },
+        ])
+        .then((result) => {
+            result.oldID = id;
+            return result;
+        })
+    })
+    .then((result) => queries.updateRole(result))
+    .then(() => startApp())
+    .then(controller) 
+}
 
 const deleteOption = () => {
     const choicesArray = [
