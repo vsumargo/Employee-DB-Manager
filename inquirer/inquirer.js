@@ -22,41 +22,29 @@ const startApp = () => {
 };
 
 const controller = (result) => {
-    // return new Promise ((resolve) => {
-    //     const {startOption} = result
-    //     switch (startOption){
-    //         case 1: resolve(viewOption()); break;
-    //         case 2: resolve(addOption()); break;
-    //         case 3: resolve(updateOption()); break;
-    //         case 4: resolve(deleteOption()); break;
-    //         case 5: resolve(exitApplication()); break;
-    //         case 6: resolve(viewAllEmployee()); break;
-    //     }
-    // })
-        const {option} = result
-        switch (option){
-            case 1: viewOption(); break;
-            case 2: addOption(); break;
-            case 3: updateOption(); break;
-            case 4: deleteOption(); break;
-            case 5: exitApplication(); break;
-            case 6: viewAllEmployee(); break;
-            case 7: viewAllDepartment(); break;
-            case 8: viewAllRoles(); break;
-            case 9: addEmployee(); break;
-            case 10: addDepartment(); break;
-            case 11: addRole(); break;
-            case 12: updateEmployee(); break;
-            case 13: updateDepartment(); break;
-            case 14: updateRole(); break;
-            case 15: deleteEmployee(); break;
-            case 16: deleteDepartment(); break;
-            case 17: deleteRole(); break;
-            case 18: sortEmployeeByID(); break;
-            case 19: sortEmployeeByManager(); break;
-            default:break;
-        }
-
+    const {option} = result
+    switch (option){
+        case 1: viewOption(); break;
+        case 2: addOption(); break;
+        case 3: updateOption(); break;
+        case 4: deleteOption(); break;
+        case 5: exitApplication(); break;
+        case 6: viewAllEmployee(); break;
+        case 7: viewAllDepartment(); break;
+        case 8: viewAllRoles(); break;
+        case 9: addEmployee(); break;
+        case 10: addDepartment(); break;
+        case 11: addRole(); break;
+        case 12: updateEmployee(); break;
+        case 13: updateDepartment(); break;
+        case 14: updateRole(); break;
+        case 15: deleteEmployee(); break;
+        case 16: deleteDepartment(); break;
+        case 17: deleteRole(); break;
+        case 18: sortEmployeeByID(); break;
+        case 19: sortEmployeeByManager(); break;
+        default:startApp();break;
+    }
 };
 
 const viewOption = () => {
@@ -448,13 +436,98 @@ const deleteOption = () => {
     .then(controller);
 };
 
+const deleteEmployee = () => {
+    queries.displayEmployees()
+    .then((data) => inquirer.prompt([
+        {
+            type: 'list',
+            name: 'id',
+            message: `Please select which employee to Delete:`,
+            choices: data,
+        },
+        {
+            type: 'confirm',
+            name: 'delete',
+            message: `Are you sure you want to delete this employee?`,
+            default: false
+        },
+    ]))
+    .then((data2) => {
+        if(!data2.delete){
+            deleteOption(); 
+        }else{
+            queries.deleteEmployee(data2)
+            .then(() => startApp())
+            .then(controller);
+        }
+    })
+    .catch((err) => console.log(err));   
+}
+
+const deleteDepartment = () => {
+    queries.displayDepartments()
+    .then((data) => inquirer.prompt([
+        {
+            type: 'list',
+            name: 'id',
+            message: `Please select which Department to DELETE:`,
+            choices: data,
+        },
+        {
+            type: 'confirm',
+            name: 'delete',
+            message: `Are you sure you want to delete this Department?`,
+            default: false
+        },
+    ]))
+    .then((data2) => {
+        if(!data2.delete){
+            deleteOption(); 
+        }else{
+            queries.deleteDepartment(data2)
+            .then(() => startApp())
+            .then(controller)
+        }
+    })
+    .catch((err) => console.log(err));
+}
+
+const deleteRole = () => {
+    queries.displayRoles()
+    .then((data) => inquirer.prompt([
+        {
+            type: 'list',
+            name: 'id',
+            message: `Please select which Role to DELETE:`,
+            choices: data,
+        },
+        {
+            type: 'confirm',
+            name: 'delete',
+            message: `Are you sure you want to delete this Role?`,
+            default: false
+        },
+    ]))
+    .then((data2) => {
+        if(!data2.delete){
+            deleteOption(); 
+        }else{
+            queries.deleteRole(data2)
+            .then(() => startApp())
+            .then(controller)
+        }
+    })
+    .catch((err) => console.log(err));
+
+}
+
+//function to run when exiting the application
 const exitApplication = () => {
-    console.log('You Are Exiting the Application')
+    console.log('\nYou Are Exiting the Application\n')
     connection.end();
 };
 
-
-
+// export module
 module.exports = {
     startApp,
     controller,

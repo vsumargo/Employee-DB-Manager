@@ -262,6 +262,48 @@ const updateRole = (result) => {
     })
 }
 
+const deleteEmployee = (result) => {
+    return new Promise ((resolve,reject) => {
+        sqlquery =  `DELETE FROM employee WHERE ?`;
+        connection.query(sqlquery,
+            {id:result.id},(err) => {
+            if (err) {reject(err)}
+            else{
+                console.log(`\nYou Have Successfully DELETED Employee\n`);
+                resolve('success')
+            } 
+        })
+    })
+}
+
+const deleteDepartment = (result) => {
+    return new Promise ((resolve,reject) => {
+        sqlquery =  `DELETE FROM department WHERE ?`;
+        connection.query(sqlquery,
+            {id:result.id},(err) => {
+            if (err) {reject(err)}
+            else{
+                console.log(`\nYou Have Successfully DELETED Department\n`);
+                resolve('success')
+            } 
+        })
+    })
+}
+
+const deleteRole = (result) => {
+    return new Promise ((resolve,reject) => {
+        sqlquery =  `DELETE FROM roles WHERE ?`;
+        connection.query(sqlquery,
+            {id:result.id},(err) => {
+            if (err) {reject(err)}
+            else{
+                console.log(`\nYou Have Successfully DELETED Role\n`);
+                resolve('success')
+            } 
+        })
+    })
+}
+
 module.exports = {
     getDataEmployee,
     getDataDepartment,
@@ -279,7 +321,10 @@ module.exports = {
     addRole,
     updateEmployee,
     updateDepartment,
-    updateRole
+    updateRole,
+    deleteEmployee,
+    deleteDepartment,
+    deleteRole
 };
 
 
